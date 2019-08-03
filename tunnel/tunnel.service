@@ -1,0 +1,15 @@
+[Unit]
+Description=AutoSSH tunnel from remote port 6622 to local 22
+After=network.target
+
+[Service]
+User=pi
+Restart=always
+Environment="AUTOSSH_GATETIME=0"
+ExecStart=/usr/bin/autossh -M 0 \
+	-o "ServerAliveInterval 10" \
+	-o "ServerAliveCountMax 3" \
+	-N -R 6622:localhost:22 kaspars@osc.lv
+
+[Install]
+WantedBy=multi-user.target
