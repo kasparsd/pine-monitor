@@ -8,11 +8,13 @@ Creates an SSH tunnel to a remote server that maps remote port 6622 to local por
 
 ## Setup
 
-1. Symlink `tunnel.service` to `/etc/systemd/system/tunnel.service`.
+1. Symlink `tunnel.service` to `/etc/systemd/system/tunnel.service`:
+
+        ln -s "$PWD/tunnel.service" /etc/systemd/system/tunnel.service
 
 2. Register the service:
 
-      systemctl enable tunnel.service
-      systemctl daemon-reload
+        systemctl enable tunnel.service
+        systemctl daemon-reload
 
 
