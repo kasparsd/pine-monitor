@@ -6,10 +6,11 @@ After=network.target
 User=pi
 Restart=always
 Environment="AUTOSSH_GATETIME=0"
-ExecStart=/usr/bin/autossh -M 0 \
+ExecStart=/usr/bin/autossh -M 0 -N -v \
 	-o "ServerAliveInterval 10" \
-	-o "ServerAliveCountMax 3" \
-	-N -R 6622:localhost:22 kaspars@osc.lv
+	-o "ServerAliveCountMax 2" \
+	-o "ExitOnForwardFailure yes" \
+	-R 6622:localhost:22 kaspars@osc.lv
 
 [Install]
 WantedBy=multi-user.target
