@@ -1,0 +1,16 @@
+[Unit]
+Description=AutoSSH tunnel from remote port 6680 to local 8000
+After=network.target
+
+[Service]
+User=pi
+Restart=always
+Environment="AUTOSSH_GATETIME=0"
+ExecStart=/usr/bin/autossh -M 0 -N -v \
+	-o "ServerAliveInterval 10" \
+	-o "ServerAliveCountMax 2" \
+	-o "ExitOnForwardFailure yes" \
+	-R 6680:localhost:8000 kaspars@osc.lv
+
+[Install]
+WantedBy=multi-user.target
