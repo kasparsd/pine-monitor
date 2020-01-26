@@ -2,6 +2,7 @@
 import io
 import picamera
 import logging
+import datetime as dt
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 class RequestHandler(BaseHTTPRequestHandler):
@@ -26,7 +27,10 @@ class RequestHandler(BaseHTTPRequestHandler):
     stream=io.BytesIO()
     with picamera.PiCamera(resolution='640x480', framerate=1) as camera:
       try:
+        camera.annotate_background = picamera.Color('black')
+        camera.annotate_text_size = 16
         for foo in camera.capture_continuous(stream,'jpeg'):
+          camera.annotate_text = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
           self._write_frame(stream.getvalue())
           stream.truncate()
           stream.seek(0)
