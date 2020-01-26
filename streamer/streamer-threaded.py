@@ -3,6 +3,7 @@ import picamera
 import logging
 import socketserver
 import threading
+import datetime as dt
 from threading import Condition
 from http import server
 
@@ -35,6 +36,7 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
     def _on_join(self):
         print("Join", threading.active_count())
         if not camera.recording:
+            print("Started Recording")
             camera.start_recording(output, format='mjpeg')
 
     def _on_leave(self):
@@ -47,11 +49,16 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
         if self.path == '/stream.mjpg':
             self._on_join()
             self._set_mjpeg_headers()
+
+            camera.annotate_background = picamera.Color('black')
+            camera.annotate_text_size = 16
+
             try:
                 while True:
                     with output.condition:
                         output.condition.wait()
                         frame = output.frame
+                    camera.annotate_text = dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                     self.wfile.write(b'--FRAME\r\n')
                     self.send_header('Content-Type', 'image/jpeg')
                     self.send_header('Content-Length', len(frame))
@@ -64,6 +71,7 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
                     self.client_address, str(e))
             finally:
                 self._on_leave()
+
         else:
             self.send_error(404)
             self.end_headers()
@@ -72,11 +80,9 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     allow_reuse_address = True
     daemon_threads = True
 
-with picamera.PiCamera(resolution='640x480', framerate=6) as camera:
-    print("Go", threading.active_count())
+with picamera.PiCamera(resolution='640x480', framerate=1) as camera:
     try:
         output = StreamingOutput()
-        camera.start_recording(output, format='mjpeg')
         address = ('', 8000)
         server = StreamingServer(address, StreamingHandler)
         server.serve_forever()
@@ -84,3 +90,4 @@ with picamera.PiCamera(resolution='640x480', framerate=6) as camera:
         logging.warning('Main exception: %s', str(e))
     finally:
         server.server_close()
+        camera.stop_recording()
